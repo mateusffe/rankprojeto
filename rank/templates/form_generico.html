@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load form_extras %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="mx-auto" style="max-width: 480px;">
+  <h2 class="mb-4 text-center">{{ titulo }}</h2>
+
+  {% if messages %}
+    <div class="mb-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {# Campos do formulário principal #}
+    {% for field in form %}
+      <div class="mb-3">
+        {% if field.field.widget.input_type == 'checkbox' %}
+            <div class="form-check mb-3">
+                {{ field|add_class:"form-check-input" }}
+                <label for="{{ field.id_for_label }}" class="form-check-label">{{ field.label }}</label>
+            </div>
+        {% else %}
+          <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+          {{ field|add_class:"form-control" }}
+        {% endif %}
+        
+        {% if field.help_text %}
+          <div class="form-text">{{ field.help_text }}</div>
+        {% endif %}
+        {% for error in field.errors %}
+          <div class="text-danger small">{{ error }}</div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+
+    {# Campos do StaffProfileForm (checkbox múltiplo) #}
+    {% if staff_profile_form %}
+        <hr>
+        <h4 class="mb-3">Circuitos do Staff</h4>
+        <div class="mb-4">
+            <label class="form-label">{{ staff_profile_form.circuitos.label }}</label>
+            <div class="card p-3">
+               {% for checkbox in staff_profile_form.circuitos %}
+                  <div class="form-check">
+                      {{ checkbox.tag }}
+                      <label class="form-check-label" for="{{ checkbox.id_for_label }}">
+                          {{ checkbox.choice_label }}
+                      </label>
+                  </div>
+              {% endfor %}
+            </div>
+            {% if staff_profile_form.circuitos.errors %}
+                <div class="text-danger small">
+                    {% for error in staff_profile_form.circuitos.errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center">
+      <button type="submit" class="btn btn-primary">Salvar</button>
+      <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<style>
+    .form-check-input {
+        margin-right: 8px;
+    }
+    .form-check-label {
+        margin-left: 5px;
+    }
+</style>
+{% endblock %}

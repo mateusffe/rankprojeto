@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.sqlite3
+*.log
+
+# Virtualenv
+venv/
+.env/
+.venv/
+ENV/
+env/
+
+# Django static/media
+/staticfiles/
+/media/
+
+# IDEs e editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Secretos
+*.env
+
+# Migrations (opcional)
+# Se quiser versionar, remova essa linha
+**/migrations/*.pyc
+**/migrations/__pycache__/

@@ -1,0 +1,14 @@
+/* admin.css */
+
+body {
+    background-color: #fce4ec !important;
+}
+
+#header {
+    background-color: #880e4f !important;
+}
+
+a {
+    color: #d50000 !important;
+    font-weight: bold;
+}

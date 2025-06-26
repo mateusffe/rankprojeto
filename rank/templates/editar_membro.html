@@ -1,0 +1,20 @@
+{% extends 'base.html' %} {# Assumindo que você tem um base.html para o seu frontend #}
+{% block title %}Editar Membro{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Editar Membro: {{ membro.nome }}</h2>
+    {% if messages %}
+        <ul class="messages list-unstyled">
+            {% for message in messages %}
+                <li {% if message.tags %} class="{{ message.tags }} alert alert-info"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }} {# Renderiza o formulário como parágrafos #}
+        <button type="submit" class="btn btn-success">Salvar Alterações</button>
+        <a href="{% url 'listar_membros' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

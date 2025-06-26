@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block title %}Ranking{% endblock %}
+
+{% block content %}
+<style>
+  .ranking-container {
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    background: #fff;
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgb(0 0 0 / 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+   
+  }
+  a{
+      text-decoration: none;
+  }
+
+  .ranking-container h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 1.5rem;
+  }
+
+  .ranking-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    
+  }
+
+  .ranking-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 1.1rem;
+    color: #444;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+   
+  }
+
+  .ranking-list li:hover {
+    background-color: #f0f8ff;
+  }
+
+  .medalha {
+    font-size: 1.5rem;
+    margin-right: 0.75rem;
+  }
+
+  .medalha.ouro {
+    color: #d4af37; /* dourado */
+    text-shadow: 0 0 5px #b28900;
+  }
+
+  .medalha.prata {
+    color: #c0c0c0; /* prata */
+    text-shadow: 0 0 5px #999;
+  }
+
+  .medalha.bronze {
+    color: #cd7f32; /* bronze */
+    text-shadow: 0 0 5px #8a4b15;
+  }
+
+  .equipe-nome {
+    flex-grow: 1;
+  }
+
+  .pontos {
+    font-weight: 700;
+    color: #222;
+  }
+</style>
+
+<div class="ranking-container">
+  <h2>Ranking de Equipes - {{ circuito.nome }}</h2>
+  {% if user.is_superuser %}
+    <a href="{% url 'dashboard' %}" class="btn btn-primary mb-3">Dashboard Superusuário</a>
+  {% elif user.is_staff %}
+    <a href="{% url 'staff_dashboard' circuito.id %}" class="btn btn-info mb-3">Dashboard do Circuito</a>
+  {% endif %}
+  <ul class="ranking-list">
+    {% for equipe in equipes %}
+     <a href="{% url 'equipe_detail' equipe.id %}">
+      <li>
+        {% if forloop.counter == 1 %}
+          <span class="medalha ouro">&#x1F947;</span>
+        {% elif forloop.counter == 2 %}
+          <span class="medalha prata">&#x1F948;</span>
+        {% elif forloop.counter == 3 %}
+          <span class="medalha bronze">&#x1F949;</span>
+        {% else %}
+          <span style="width:24px; display:inline-block;"></span>
+        {% endif %}
+        <span class="equipe-nome">{{ equipe.nome }}</span>
+        <span class="pontos">{{ equipe.pontuacao_total }} pontos</span>
+      </li>
+     </a>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Listagem de Membros{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Membros Cadastrados</h2>
+
+    {% if messages %}
+        <ul class="messages list-unstyled">
+            {% for message in messages %}
+                <li {% if message.tags %} class="{{ message.tags }} alert alert-info"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <!-- Formulário de Pesquisa e Filtro -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <!-- Campo de Pesquisa -->
+                <div class="col-md-6">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" name="pesquisa" placeholder="Pesquisar por nome..." value="{{ termo_pesquisa }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Filtro por Equipe -->
+                <div class="col-md-4">
+                    <select class="form-select" name="equipe" onchange="this.form.submit()">
+                        <option value="">Todas as Equipes</option>
+                        {% for equipe in equipes %}
+                            <option value="{{ equipe.id }}" {% if equipe_filtrada == equipe.id %}selected{% endif %}>
+                                {{ equipe.nome }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Botão Limpar Filtros -->
+                <div class="col-md-2">
+                    {% if termo_pesquisa or equipe_filtrada %}
+                        <a href="{% url 'listar_membros' %}" class="btn btn-outline-danger w-100">
+                            <i class="fas fa-times"></i> Limpar
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Botão Cadastrar Novo -->
+    <a href="{% url 'cadastrar_membro' %}" class="btn btn-primary mb-3">
+        <i class="fas fa-plus"></i> Novo Membro
+    </a>
+
+    <!-- Tabela de Membros -->
+    {% if membros %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nome</th>
+                    <th>Equipe</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for membro in membros %}
+                <tr>
+                    <td>{{ membro.nome }}</td>
+                    <td>{{ membro.equipe.nome }}</td>
+                    <td class="text-end">
+                        <a href="{% url 'editar_membro' membro.pk %}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit">Editar</i>
+                        </a>
+                        <a href="{% url 'excluir_membro' membro.pk %}" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash">Excluir</i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-warning">
+        Nenhum membro encontrado. {% if termo_pesquisa or equipe_filtrada %}Tente ajustar seus critérios de pesquisa.{% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Adicionando ícones do Font Awesome -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+{% endblock %}

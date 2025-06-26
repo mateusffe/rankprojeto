@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Staff: {{ staff.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Editar Staff: {{ staff.username }}</h2>
+    
+    <form method="post">
+        {% csrf_token %}  <!-- ESSENCIAL para segurança do Django -->
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Informações do Usuário</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Usuário</label>
+                    {{ staff_form.username }}
+                    {% if staff_form.username.errors %}
+                        <div class="text-danger">{{ staff_form.username.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Senha (deixe em branco para não alterar)</label>
+                    {{ staff_form.password }}
+                    {% if staff_form.password.errors %}
+                        <div class="text-danger">{{ staff_form.password.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-check mb-3">
+                    {{ staff_form.is_superuser }} 
+                    <label class="form-check-label" for="{{ staff_form.is_superuser.id_for_label }}">
+                        É Superusuário?
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Circuitos Associados</h3>
+            </div>
+            <div class="card-body">
+                {{ profile_form.circuitos }}  <!-- Renderiza os checkboxes -->
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        <a href="{% url 'listar_staff' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

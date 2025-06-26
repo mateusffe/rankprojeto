@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}{{ equipe.nome }}{% endblock %}
+{% block content %}
+<h2>{{ equipe.nome }}</h2>
+<p><strong>Total:</strong> {{ equipe.pontuacao_total }} pontos</p>
+
+<h3>Pontuações</h3>
+<ul>
+  {% for p in equipe.pontuacoes.all %}
+    <li>{{ p.atividade.nome }}: +{{ p.valor }} ({{ p.data|date:"d/m/Y H:i" }})</li>
+  {% empty %}
+    <li>Sem pontuações.</li>
+  {% endfor %}
+</ul>
+
+<h3>Penalizações</h3>
+<ul>
+  {% for p in equipe.penalizacoes.all %}
+    <li>{{ p.motivo }}: {{ p.valor }} ({{ p.data|date:"d/m/Y H:i" }})</li>
+  {% empty %}
+    <li>Sem penalizações.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

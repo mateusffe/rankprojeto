@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard do Circuito: {{ circuito.nome }}{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h2>Dashboard do Circuito: {{ circuito.nome }}</h2>
+    <p>Gerencie as informações para este circuito.</p>
+</div>
+
+<div class="d-flex flex-wrap justify-content-center gap-3">
+    <a href="{% url 'cadastrar_equipe' %}" class="btn btn-primary btn-lg flex-fill" style="max-width: 220px;">
+        Cadastrar Equipe
+    </a>
+    <a href="{% url 'cadastrar_membro' %}" class="btn btn-success btn-lg flex-fill" style="max-width: 220px;">
+        Cadastrar Membro
+    </a>
+    <a href="{% url 'criar_pontuacao' %}" class="btn btn-danger btn-lg flex-fill" style="max-width: 220px;">
+        Criar Pontuação
+    </a>
+    <a href="{% url 'criar_penalizacao' %}" class="btn btn-warning btn-lg flex-fill" style="max-width: 220px; color: black;">
+        Criar Penalização
+    </a>
+</div>
+
+<h3 class="mt-5 text-center">Listagens para o Circuito: {{ circuito.nome }}</h3>
+<div class="d-flex flex-wrap justify-content-center gap-3">
+    <a href="{% url 'listar_modelo' 'equipe' circuito.id %}" class="btn btn-outline-primary btn-lg flex-fill" style="max-width: 220px;">
+        Listar Equipes
+    </a>
+    <a href="{% url 'listar_modelo' 'atividade' circuito.id %}" class="btn btn-outline-info btn-lg flex-fill" style="max-width: 220px;">
+        Listar Atividades
+    </a>
+    <a href="{% url 'listar_modelo' 'pontuacao' circuito.id %}" class="btn btn-outline-danger btn-lg flex-fill" style="max-width: 220px;">
+        Listar Pontuações
+    </a>
+    <a href="{% url 'listar_modelo' 'penalizacao' circuito.id %}" class="btn btn-outline-warning btn-lg flex-fill" style="max-width: 220px;">
+        Listar Penalizações
+    </a>
+</div>
+
+<div class="mt-4 text-center">
+    <a href="{% url 'index' %}" class="btn btn-secondary">Voltar para Circuitos Ativos</a>
+</div>
+{% endblock %}

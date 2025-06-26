@@ -1,0 +1,103 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Listagem de {{ model_verbose_name }} para o Circuito {{ circuito.nome }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2 class="mb-4 text-center">Listagem de {{ model_verbose_name }}</h2>
+    <h3 class="mb-4 text-center">Circuito: {{ circuito.nome }}</h3>
+
+    {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="mb-3">
+        <form method="GET" class="d-flex">
+            <input type="text" name="q" class="form-control me-2" placeholder="Pesquisar..." value="{{ campo_busca }}">
+            <button type="submit" class="btn btn-outline-secondary">Pesquisar</button>
+        </form>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>
+                {% if modelo == 'equipe' %}
+                    <th>Nome</th>
+                    <th>Cor</th>
+                    <th>Pontuação Total</th>
+                {% elif modelo == 'atividade' %}
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Pontuação Fixa</th>
+                    <th>Valor Padrão</th>
+                    <th>Responsável</th>
+                {% elif modelo == 'pontuacao' %}
+                    <th>Equipe</th>
+                    <th>Atividade</th>
+                    <th>Valor</th>
+                    <th>Data</th>
+                {% elif modelo == 'penalizacao' %}
+                    <th>Equipe</th>
+                    <th>Motivo</th>
+                    <th>Valor</th>
+                    <th>Data</th>
+                {% endif %}
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in objetos %}
+                <tr>
+                    <td>{{ obj.id }}</td>
+                    {% if modelo == 'equipe' %}
+                        <td>{{ obj.nome }}</td>
+                        <td>{{ obj.cor }}</td>
+                        <td>{{ obj.pontuacao_total }}</td>
+                    {% elif modelo == 'atividade' %}
+                        <td>{{ obj.nome }}</td>
+                        <td>{{ obj.get_tipo_display }}</td>
+                        <td>{% if obj.pontuacao_fixa %}Sim{% else %}Não{% endif %}</td>
+                        <td>{{ obj.valor_padrao }}</td>
+                        <td>{{ obj.responsavel.username|default:"N/A" }}</td>
+                    {% elif modelo == 'pontuacao' %}
+                        <td>{{ obj.equipe.nome }}</td>
+                        <td>{{ obj.atividade.nome }}</td>
+                        <td>{{ obj.valor }}</td>
+                        <td>{{ obj.data|date:"d/m/Y H:i" }}</td>
+                    {% elif modelo == 'penalizacao' %}
+                        <td>{{ obj.equipe.nome }}</td>
+                        <td>{{ obj.motivo }}</td>
+                        <td>{{ obj.valor }}</td>
+                        <td>{{ obj.data|date:"d/m/Y H:i" }}</td>
+
+                    {% endif %}
+
+                  
+                        <td>
+                            <a href="{% url 'editar_modelo' modelo=modelo pk=obj.pk %}" class="btn btn-sm btn-warning">Editar</a>
+                            <a href="{% url 'excluir_modelo' modelo=modelo pk=obj.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este item?');">Excluir</a>
+                            {% if modelo == 'equipe' %}
+                              <a href="{% url 'listar_membros'%}" class="btn btn-sm btn-danger">Membros</a>
+                            {%endif%}
+                        </td>
+                
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="{% if modelo == 'equipe' %}5{% elif modelo == 'atividade' %}7{% elif modelo == 'pontuacao' %}6{% elif modelo == 'penalizacao' %}6{% endif %}" class="text-center">Nenhum {{ model_verbose_name }} encontrado.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Voltar ao Dashboard</a>
+    </div>
+</div>
+{% endblock %}

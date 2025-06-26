@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Listagem de Staff{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Staff Cadastrado</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Filtros e Pesquisa -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <!-- Campo de Pesquisa -->
+                <div class="col-md-5">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="search" 
+                               placeholder="Pesquisar por nome, email..." value="{{ current_search }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Filtro por Tipo -->
+                <div class="col-md-3">
+                    <select class="form-select" name="superuser" onchange="this.form.submit()">
+                        <option value="">Todos os tipos</option>
+                        <option value="true" {% if current_superuser == 'true' %}selected{% endif %}>Superusuários</option>
+                        <option value="false" {% if current_superuser == 'false' %}selected{% endif %}>Staff comum</option>
+                    </select>
+                </div>
+                
+                <!-- Filtro por Circuito -->
+                <div class="col-md-3">
+                    <select class="form-select" name="circuito" onchange="this.form.submit()">
+                        <option value="">Todos os circuitos</option>
+                        {% for circuito in circuitos %}
+                            <option value="{{ circuito.id }}" 
+                                {% if current_circuito == circuito.id %}selected{% endif %}>
+                                {{ circuito.nome }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Botão Limpar -->
+                <div class="col-md-1">
+                    {% if current_search or current_superuser or current_circuito %}
+                    <a href="{% url 'listar_staff' %}" class="btn btn-outline-danger w-100">
+                        <i class="fas fa-times"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela de Staff -->
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Username</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Tipo</th>
+                    <th>Circuitos</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for staff in staff_list %}
+                <tr>
+                    <td>{{ staff.username }}</td>
+                    <td>{{ staff.get_full_name }}</td>
+                    <td>{{ staff.email }}</td>
+                    <td>
+                        {% if staff.is_superuser %}
+                            <span class="badge bg-success">Superusuário</span>
+                        {% else %}
+                            <span class="badge bg-primary">Staff</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if staff.staffprofile.circuitos.all %}
+                            {% for circuito in staff.staffprofile.circuitos.all %}
+                                <span class="badge bg-info">{{ circuito.nome }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-muted">Nenhum</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'editar_staff' staff.pk %}" class="btn btn-sm btn-warning" title="Editar">
+                            <i class="fas fa-edit">Editar</i>
+                        </a>
+                        <a href="{% url 'excluir_staff' staff.pk %}" class="btn btn-sm btn-danger" title="Excluir">
+                            <i class="fas fa-trash">Excluir</i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">
+                        Nenhum staff encontrado {% if current_search or current_superuser or current_circuito %}com os filtros aplicados{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
