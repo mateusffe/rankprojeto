@@ -1,0 +1,108 @@
+{# /templates/autorizacao_list.html #}
+
+{% extends 'base.html' %}
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4 text-center">{{ titulo }}</h2>
+
+    {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <h3 class="mt-4">Pontuações Pendentes ({{ pontuacoes_pendentes.count }})</h3>
+    {% if pontuacoes_pendentes %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Equipe</th>
+                        <th>Circuito</th>
+                        <th>Valor/Tempo</th>
+                        <th>Data</th>
+                        <th>Criado por</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pontuacao in pontuacoes_pendentes %}
+                        <tr>
+                            <td>{{ pontuacao.id }}</td>
+                            <td>{{ pontuacao.equipe.nome }}</td>
+                            <td>{{ pontuacao.circuito.nome }}</td>
+                            <td>
+                                {% if pontuacao.circuito.modo_ranking == 'tempo' %}
+                                    {{ pontuacao.tempo_formatado }} {# Alterado para tempo_formatado #}
+                                {% else %}
+                                    {{ pontuacao.valor }} pontos
+                                {% endif %}
+                            </td>
+                            <td>{{ pontuacao.data|date:"d/m/Y H:i" }}</td>
+                            <td>{{ pontuacao.usuario.username }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'autorizar_item' modelo='pontuacao' pk=pontuacao.pk %}" class="btn btn-sm btn-success">Autorizar</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-center text-muted">Nenhuma pontuação pendente.</p>
+    {% endif %}
+
+    <h3 class="mt-5">Penalizações Pendentes ({{ penalizacoes_pendentes.count }})</h3>
+    {% if penalizacoes_pendentes %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Equipe</th>
+                        <th>Circuito</th>
+                        <th>Motivo</th>
+                        <th>Valor/Tempo</th> {# Alterado para Valor/Tempo #}
+                        <th>Data</th>
+                        <th>Criado por</th>
+                        <th class="text-end">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for penalizacao in penalizacoes_pendentes %}
+                        <tr>
+                            <td>{{ penalizacao.id }}</td>
+                            <td>{{ penalizacao.equipe.nome }}</td>
+                            <td>{{ penalizacao.circuito.nome }}</td>
+                            <td>{{ penalizacao.motivo }}</td>
+                            <td>
+                                {% if penalizacao.circuito.modo_ranking == 'tempo' %}
+                                    -{{ penalizacao.tempo_formatado }} {# Exibe tempo formatado para penalização de tempo #}
+                                {% else %}
+                                    {{ penalizacao.valor }} pontos
+                                {% endif %}
+                            </td>
+                            <td>{{ penalizacao.data|date:"d/m/Y H:i" }}</td>
+                            <td>{{ penalizacao.usuario.username }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'autorizar_item' modelo='penalizacao' pk=penalizacao.pk %}" class="btn btn-sm btn-success">Autorizar</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-center text-muted">Nenhuma penalização pendente.</p>
+    {% endif %}
+
+    <div class="mt-4 text-center">
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Voltar ao Dashboard</a>
+    </div>
+</div>
+{% endblock %}

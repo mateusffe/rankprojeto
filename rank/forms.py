@@ -1,8 +1,8 @@
-from django import forms
-from .models import Equipe, Membro, Atividade, Pontuacao, Penalizacao, Circuito, StaffProfile
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserChangeForm
+# /forms.py
 
+from django import forms
+from .models import Equipe, Membro, Pontuacao, Penalizacao, Circuito, StaffProfile
+from django.contrib.auth.models import User
 
 class BootstrapFormMixin:
     def __init__(self, *args, **kwargs):
@@ -15,115 +15,196 @@ class BootstrapFormMixin:
 class EquipeForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Equipe
-        fields = '__all__'
+        fields = ['circuito', 'nome', 'brasao']
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         if user and not user.is_superuser:
-            # Filtra os circuitos disponíveis para o staff
             self.fields['circuito'].queryset = user.staffprofile.circuitos.all()
-            # Se o staff só tem um circuito, pré-seleciona e desabilita o campo
             if user.staffprofile.circuitos.count() == 1:
                 self.fields['circuito'].initial = user.staffprofile.circuitos.first()
-                self.fields['circuito'].widget = forms.HiddenInput() # Esconde o campo se for apenas um
+                self.fields['circuito'].widget = forms.HiddenInput()
 
-class MembroForm(BootstrapFormMixin ,forms.ModelForm): # Removi BootstrapFormMixin para simplificar, adicione de volta se quiser
+class MembroForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Membro
         fields = '__all__'
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None) # Recebe o usuário da view
-        super().__init__(*args, **kwargs)
-        if user and not user.is_superuser:
-            # Filtra as equipes disponíveis para o staff (apenas as do seu circuito)
-            staff_circuitos_ids = user.staffprofile.circuitos.values_list('id', flat=True)
-            self.fields['equipe'].queryset = Equipe.objects.filter(circuito__id__in=staff_circuitos_ids)
-
-class AtividadeForm(forms.ModelForm):
-    class Meta:
-        model = Atividade
-        fields = '__all__'
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-
-        if 'responsavel' in self.fields:
-            self.fields['responsavel'].queryset = User.objects.filter(is_staff=True)
         
+        self.fields['circuito_filtro'] = forms.ModelChoiceField(
+            queryset=Circuito.objects.all(),
+            label="Filtrar Equipes por Circuito",
+            required=False,
+            empty_label="Todos os Circuitos"
+        )
+        self.fields['circuito_filtro'].widget.attrs.update({'onchange': 'filterEquipes(this.value)'})
+
         if user and not user.is_superuser:
-            # Filtra os circuitos disponíveis para o staff
-            self.fields['circuito'].queryset = user.staffprofile.circuitos.all()
-            # Se o staff só tem um circuito, pré-seleciona e desabilita o campo
-            if user.staffprofile.circuitos.count() == 1:
-                self.fields['circuito'].initial = user.staffprofile.circuitos.first()
-                self.fields['circuito'].widget = forms.HiddenInput() # Esconde o campo se for apenas um
+            staff_circuitos_ids = user.staffprofile.circuitos.values_list('id', flat=True)
+            self.fields['equipe'].queryset = Equipe.objects.filter(circuito__id__in=staff_circuitos_ids)
+        else:
+            self.fields['equipe'].queryset = Equipe.objects.all()
+
+        for equipe in self.fields['equipe'].queryset:
+            self.fields['equipe'].widget.attrs.update({f'data-circuito-{equipe.id}': equipe.circuito.id if equipe.circuito else ''})
+
+# /forms.py
+
+
+
+# /forms.py
+
+from django import forms
+from .models import Pontuacao, Equipe, Circuito
 
 
 class PontuacaoForm(forms.ModelForm):
+    horas = forms.IntegerField(min_value=0, required=False, help_text="Horas")
+    minutos = forms.IntegerField(min_value=0, max_value=59, required=False, help_text="Minutos")
+    segundos = forms.IntegerField(min_value=0, max_value=59, required=False, help_text="Segundos")
+
     class Meta:
         model = Pontuacao
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        user = kwargs.pop('user', None)  # recebe o user da view
-        super().__init__(*args, **kwargs)
-
-        if user and not user.is_superuser:
-            # Filtra as atividades e equipes com base nos circuitos do staff
-            staff_circuitos_ids = user.staffprofile.circuitos.values_list('id', flat=True)
-            self.fields['atividade'].queryset = Atividade.objects.filter(circuito__id__in=staff_circuitos_ids, responsavel=user)
-            self.fields['equipe'].queryset = Equipe.objects.filter(circuito__id__in=staff_circuitos_ids)
-            # Se o staff só tem um circuito, pré-seleciona e desabilita o campo de circuito
-            if user.staffprofile.circuitos.count() == 1:
-                self.fields['circuito'].initial = user.staffprofile.circuitos.first()
-                self.fields['circuito'].widget = forms.HiddenInput() # Esconde o campo se for apenas um
-        elif user and user.is_superuser:
-            # Para superusuário, filtra atividades e equipes por circuito se um circuito já estiver selecionado
-            # Isso é para o caso de edição, onde o objeto já tem um circuito
-            if self.instance and self.instance.circuito:
-                self.fields['atividade'].queryset = Atividade.objects.filter(circuito=self.instance.circuito)
-                self.fields['equipe'].queryset = Equipe.objects.filter(circuito=self.instance.circuito)
-            else:
-                # Caso contrário, mostra todas as atividades e equipes
-                self.fields['atividade'].queryset = Atividade.objects.all()
-                self.fields['equipe'].queryset = Equipe.objects.all()
-
-
-class PenalizacaoForm(BootstrapFormMixin, forms.ModelForm):
-    class Meta:
-        model = Penalizacao
-        fields = '__all__'
+        exclude = ['tempo_em_segundos']
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        if user and not user.is_superuser:
-            # Filtra as equipes disponíveis para o staff (apenas as do seu circuito)
-            staff_circuitos_ids = user.staffprofile.circuitos.values_list('id', flat=True)
-            self.fields['equipe'].queryset = Equipe.objects.filter(circuito__id__in=staff_circuitos_ids)
-            # Se o staff só tem um circuito, pré-seleciona e desabilita o campo de circuito
-            if user.staffprofile.circuitos.count() == 1:
-                self.fields['circuito'].initial = user.staffprofile.circuitos.first()
-                self.fields['circuito'].widget = forms.HiddenInput() # Esconde o campo se for apenas um
+        # … aqui vai sua lógica de filtrar circuitos/equipes …
+
+        if self.instance and self.instance.tempo_em_segundos is not None:
+            total = self.instance.tempo_em_segundos
+            self.fields['horas'].initial = total // 3600
+            self.fields['minutos'].initial = (total % 3600) // 60
+            self.fields['segundos'].initial = total % 60
+
+    def clean(self):
+        data = super().clean()
+        circuito = data.get('circuito')
+
+        if circuito and circuito.modo_ranking == 'tempo':
+            h = data.get('horas') or 0
+            m = data.get('minutos') or 0
+            s = data.get('segundos') or 0
+            total = h*3600 + m*60 + s
+            if total <= 0:
+                raise forms.ValidationError("Para atividades por tempo, o tempo não pode ser zero.")
+            data['tempo_calculado'] = total
+            data['valor'] = None
+        else:
+            data['horas'] = data['minutos'] = data['segundos'] = None
+            data['tempo_calculado'] = None
+            if circuito and not circuito.pontuacao_fixa and data.get('valor') is None:
+                self.add_error('valor', "Esta atividade não tem pontuação fixa. Informe o valor.")
+
+        equipe = data.get('equipe')
+        if equipe and circuito and equipe.circuito != circuito:
+            self.add_error('equipe', "A equipe não pertence ao circuito selecionado.")
+
+        return data
+
+    def _post_clean(self):
+        # primeiro injetamos o valor calculado na instância
+        tempo = self.cleaned_data.get('tempo_calculado')
+        if tempo is not None:
+            self.instance.tempo_em_segundos = tempo
+
+        # somente depois chamamos o super, que faz model.full_clean()
+        super()._post_clean()
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+        tempo = self.cleaned_data.get('tempo_calculado')
+        if tempo is not None:
+            obj.tempo_em_segundos = tempo
+        if commit:
+            obj.save()
+        return obj
+
+class PenalizacaoForm(forms.ModelForm):
+    horas = forms.IntegerField(min_value=0, required=False, help_text="Horas")
+    minutos = forms.IntegerField(min_value=0, max_value=59, required=False, help_text="Minutos")
+    segundos = forms.IntegerField(min_value=0, max_value=59, required=False, help_text="Segundos")
+
+    class Meta:
+        model = Penalizacao
+        exclude = ['tempo_em_segundos']   # removido fields='__all__'
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        # … sua lógica de filtrar circuitos/equipes …
+
+        if self.instance and self.instance.tempo_em_segundos is not None:
+            total = self.instance.tempo_em_segundos
+            self.fields['horas'].initial = total // 3600
+            self.fields['minutos'].initial = (total % 3600) // 60
+            self.fields['segundos'].initial = total % 60
+
+    def clean(self):
+        data = super().clean()
+        circuito = data.get('circuito')
+
+        if circuito and circuito.modo_ranking == 'tempo':
+            h = data.get('horas') or 0
+            m = data.get('minutos') or 0
+            s = data.get('segundos') or 0
+            total = h*3600 + m*60 + s
+            if total <= 0:
+                raise forms.ValidationError("Para penalizações por tempo, o tempo não pode ser zero.")
+            data['tempo_calculado'] = total
+            data['valor'] = None
+        else:
+            data['horas'] = data['minutos'] = data['segundos'] = None
+            data['tempo_calculado'] = None
+            if data.get('valor') is None:
+                self.add_error('valor', "Informe o valor da penalização.")
+            elif data.get('valor') >= 0:
+                self.add_error('valor', "O valor da penalização deve ser negativo.")
+
+        equipe = data.get('equipe')
+        if equipe and circuito and equipe.circuito != circuito:
+            self.add_error('equipe', "A equipe não pertence ao circuito selecionado.")
+
+        return data
+
+    def _post_clean(self):
+        # injeta o tempo antes de rodar model.full_clean()
+        tempo = self.cleaned_data.get('tempo_calculado')
+        if tempo is not None:
+            self.instance.tempo_em_segundos = tempo
+        super()._post_clean()
+
+    def save(self, commit=True):
+        obj = super().save(commit=False)
+        tempo = self.cleaned_data.get('tempo_calculado')
+        if tempo is not None:
+            obj.tempo_em_segundos = tempo
+        if commit:
+            obj.save()
+        return obj
 
 
 class CircuitoForm(BootstrapFormMixin, forms.ModelForm):
     class Meta:
         model = Circuito
-        fields = ['nome', 'data_encerramento', 'ativo']
-        widgets = {
-            'data_encerramento': forms.DateInput(attrs={'type': 'date'}),
-        }
+        fields =  '__all__'
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        self.fields['modo_ranking'].widget.attrs.update({'onchange': 'togglePontuacaoFixaFields()'})
+
 
 class StaffCreationForm(forms.Form):
     username = forms.CharField(max_length=150, label="Usuário")
     password = forms.CharField(widget=forms.PasswordInput, label="Senha", required=False)
     is_superuser = forms.BooleanField(required=False, label="É Superusuário?")
+
+
 class StaffProfileForm(forms.ModelForm):
     class Meta:
         model = StaffProfile
@@ -131,7 +212,34 @@ class StaffProfileForm(forms.ModelForm):
         widgets = {
             'circuitos': forms.CheckboxSelectMultiple
         }
-    
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['circuitos'].queryset = Circuito.objects.filter(ativo=True)
+
+
+class PontuacaoAuthorizationForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = Pontuacao
+        fields = ['status', 'aprovado_por', 'data_aprovacao']
+        widgets = {
+            'status': forms.Select(choices=Pontuacao.STATUS_CHOICES),
+            'aprovado_por': forms.HiddenInput(),
+            'data_aprovacao': forms.HiddenInput(),
+        }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['aprovado_por'].queryset = User.objects.filter(is_superuser=True)
+
+class PenalizacaoAuthorizationForm(BootstrapFormMixin, forms.ModelForm):
+    class Meta:
+        model = Penalizacao
+        fields = ['status', 'aprovado_por', 'data_aprovacao']
+        widgets = {
+            'status': forms.Select(choices=Penalizacao.STATUS_CHOICES),
+            'aprovado_por': forms.HiddenInput(),
+            'data_aprovacao': forms.HiddenInput(),
+        }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['aprovado_por'].queryset = User.objects.filter(is_superuser=True)

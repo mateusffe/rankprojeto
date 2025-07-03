@@ -4,60 +4,62 @@
 
 {% block content %}
 <div class="text-center mb-4">
-    <h2>Painel de Administração (Superusuário)</h2>
+    <h2>Painel de Administração (Admin)</h2>
     <p>Escolha uma das ações abaixo para gerenciar o sistema:</p>
 </div>
 
 <div class="d-flex flex-wrap justify-content-center gap-3">
-    <a href="{% url 'cadastrar_equipe' %}" class="btn btn-primary btn-lg flex-fill" style="max-width: 220px;">
+    <a href="{% url 'cadastrar_circuito' %}" class="btn btn-primary	 flex-fill " style="max-width: 220px; color: white;">
+        Criar Prova
+    </a>
+    <a href="{% url 'cadastrar_equipe' %}" class="btn btn-primary flex-fill" style="max-width: 220px;">
         Cadastrar Equipe
     </a>
-    <a href="{% url 'cadastrar_membro' %}" class="btn btn-success btn-lg flex-fill" style="max-width: 220px;">
+    <a href="{% url 'cadastrar_membro' %}" class="btn btn-primary flex-fill" style="max-width: 220px;">
         Cadastrar Membro
     </a>
-    <a href="{% url 'cadastrar_atividade' %}" class="btn btn-info btn-lg flex-fill" style="max-width: 220px; color: white;">
-        Criar Atividade
+     <a href="{% url 'listar_autorizacoes_pendentes' %}" class="btn btn-warning  flex-fill" style="max-width: 220px;">
+        Autorizações Pendentes
     </a>
-    <a href="{% url 'criar_pontuacao' %}" class="btn btn-warning btn-lg flex-fill" style="max-width: 220px;">
-        Criar Pontuação
+    <a href="{% url 'criar_pontuacao' %}" class="btn btn-success btn-success flex-fill" style="max-width: 220px;">
+        Pontuar Equipes
     </a>
-    <a href="{% url 'criar_penalizacao' %}" class="btn btn-danger btn-lg flex-fill" style="max-width: 220px; color: black;">
-        Criar Penalização
+    <a href="{% url 'criar_penalizacao' %}" class="btn btn-danger btn-danger flex-fill" style="max-width: 220px; color: black;">
+        Penalizar Equipes
     </a>
-    <a href="{% url 'criar_circuito' %}" class="btn btn-secondary btn-lg flex-fill" style="max-width: 220px;">
-        Criar Circuito
-    </a>
-    <a href="{% url 'cadastrar_staff' %}" class="btn btn-dark btn-lg flex-fill" style="max-width: 220px;">
+    <a href="{% url 'cadastrar_staff' %}" class="btn btn-dark btn-dark flex-fill" style="max-width: 220px;">
         Cadastrar Staff
     </a>
-    <a href="{% url 'listar_circuitos_inativos' %}" class="btn btn-success btn-lg flex-fill" style="max-width: 220px;">
-        Circuitos Inativos
+    <a href="{% url 'listar_circuitos_inativos' %}" class="btn btn-dark  flex-fill" style="max-width: 220px;">
+        Provas Inativas
     </a>
-     <a href="{% url 'listar_circuitos_ativos' %}" class="btn btn-warning btn-lg flex-fill" style="max-width: 220px;">
-        Circuitos Ativos
+    <a href="{% url 'listar_circuitos_ativos' %}" class="btn btn-dark  flex-fill" style="max-width: 220px;">
+        Provas Ativas
     </a>
-    <a href="{% url 'listar_staff' %}" class="btn btn-dark btn-lg flex-fill" style="max-width: 220px;">
+    <a href="{% url 'listar_staff' %}" class="btn btn-dark  flex-fill" style="max-width: 220px;">
         Listar Staff
     </a>
-     <a href="{% url 'listar_membros'%}" class="btn btn-primary btn-lg flex-fill">Membros</a>
+    <a href="{% url 'listar_membros' %}" class="btn btn-dark flex-fill" style="max-width: 220px;">
+        Listar Membros
+    </a>
+   
 </div>
 
-<h3 class="mt-5 text-center">Listagens por Circuito (Superusuário)</h3>
+<h3 class="mt-5 text-center">Listagens por Prova (Admin)</h3>
 <div class="d-flex flex-wrap justify-content-center gap-3">
     {% for circuito in circuitos_ativos %}
         <div class="card" style="width: 18rem;">
             <div class="card-body">
                 <h5 class="card-title">{{ circuito.nome }}</h5>
-                <p class="card-text">Gerenciar dados para este circuito.</p>
+                <p class="card-text">Gerenciar dados para esta prova.</p>
                 <a href="{% url 'listar_modelo' 'equipe' circuito.id %}" class="btn btn-sm btn-outline-primary mb-1">Listar Equipes</a>
-                <a href="{% url 'listar_modelo' 'atividade' circuito.id %}" class="btn btn-sm btn-outline-info mb-1">Listar Atividades</a>
+                <a href="{% url 'listar_modelo' 'circuito' circuito.id %}" class="btn btn-sm btn-outline-info mb-1">Listar Circuitos</a>
                 <a href="{% url 'listar_modelo' 'pontuacao' circuito.id %}" class="btn btn-sm btn-outline-danger mb-1">Listar Pontuações</a>
                 <a href="{% url 'listar_modelo' 'penalizacao' circuito.id %}" class="btn btn-sm btn-outline-warning mb-1">Listar Penalizações</a>
-                
             </div>
         </div>
     {% empty %}
-        <p>Nenhum circuito ativo no momento.</p>
+        <p>Nenhuma prova ativa no momento.</p>
     {% endfor %}
 </div>
 

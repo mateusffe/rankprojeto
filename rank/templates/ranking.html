@@ -1,107 +1,230 @@
+{# /templates/ranking.html #}
+
 {% extends 'base.html' %}
 {% block title %}Ranking{% endblock %}
 
 {% block content %}
 <style>
+  body {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 20px;
+  }
+  
   .ranking-container {
-    max-width: 600px;
-    margin: 0 auto 2rem;
-    background: #fff;
-    padding: 1.5rem 2rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px rgb(0 0 0 / 0.1);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-   
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 30px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
   }
-  a{
-      text-decoration: none;
-  }
-
-  .ranking-container h2 {
+  
+  h2 {
     text-align: center;
-    color: #333;
-    margin-bottom: 1.5rem;
+    margin-bottom: 30px;
+    color: #3a0ca3;
+    font-weight: 700;
+    font-size: 28px;
+    position: relative;
+    padding-bottom: 15px;
   }
-
+  
+  h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, #7209b7, #f72585);
+  }
+  
   .ranking-list {
     list-style: none;
     padding: 0;
     margin: 0;
-    
   }
-
+  
+  .ranking-list a {
+    text-decoration: none;
+    color: inherit;
+  }
+  
   .ranking-list li {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid #e0e0e0;
-    font-size: 1.1rem;
-    color: #444;
-    cursor: pointer;
-    transition: background-color 0.25s ease;
-   
+    padding: 16px 20px;
+    margin: 12px 0;
+    background: white;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    box-shadow: 2px 4px 8px rgba(0, 0, 0, 1);
+    border-left: 5px solid;
   }
-
+  
+  /* Cores diferentes para cada posição */
+  .ranking-list li:nth-child(1) {
+    border-color: #3a0ca3;
+    background: linear-gradient(90deg, rgba(255,215,0,0.1) 0%, white 20%);
+  }
+  
+  .ranking-list li:nth-child(2) {
+    border-color: #c0c0c0;
+    background: linear-gradient(90deg, rgba(192,192,192,0.1) 0%, white 20%);
+  }
+  
+  .ranking-list li:nth-child(3) {
+    border-color: #cd7f32;
+    background: linear-gradient(90deg, rgba(205,127,50,0.1) 0%, white 20%);
+  }
+  
+  .ranking-list li:nth-child(n+4) {
+    border-color: #4361ee;
+    background: linear-gradient(90deg, rgba(67,97,238,0.05) 0%, white 20%);
+  }
+  
   .ranking-list li:hover {
-    background-color: #f0f8ff;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
   }
-
+  
   .medalha {
-    font-size: 1.5rem;
-    margin-right: 0.75rem;
+    font-size: 28px;
+    width: 40px;
+    text-align: center;
   }
-
+  
   .medalha.ouro {
-    color: #d4af37; /* dourado */
-    text-shadow: 0 0 5px #b28900;
+    color: #ffd700;
+    text-shadow: 0 0 5px rgba(255,215,0,0.5);
   }
-
+  
   .medalha.prata {
-    color: #c0c0c0; /* prata */
-    text-shadow: 0 0 5px #999;
+    color: #c0c0c0;
+    text-shadow: 0 0 5px rgba(192,192,192,0.5);
   }
-
+  
   .medalha.bronze {
-    color: #cd7f32; /* bronze */
-    text-shadow: 0 0 5px #8a4b15;
+    color: #cd7f32;
+    text-shadow: 0 0 5px rgba(205,127,50,0.5);
   }
-
+  
+  .medalha.empty {
+    opacity: 0;
+  }
+  
   .equipe-nome {
     flex-grow: 1;
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    margin-left: 15px;
   }
-
+  
+  .equipe-nome img {
+    height: 32px;
+    width: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 12px;
+    border: 2px solid #eee;
+  }
+  
   .pontos {
     font-weight: 700;
-    color: #222;
+    font-size: 18px;
+    background: linear-gradient(135deg, #4361ee, #3a0ca3);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    min-width: 80px;
+    text-align: center;
+  }
+  
+  .btn {
+    display: inline-block;
+    margin-bottom: 25px;
+    padding: 12px 24px;
+    border-radius: 50px;
+    text-decoration: none;
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, #3a0ca3, #4361ee);
+  }
+  
+  .btn-info {
+    background: linear-gradient(135deg, #4cc9f0, #4895ef);
+  }
+  
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  .text-muted {
+    text-align: center;
+    color: #6c757d;
+    font-size: 16px;
+    margin-top: 30px;
   }
 </style>
 
+
+
 <div class="ranking-container">
   <h2>Ranking de Equipes - {{ circuito.nome }}</h2>
+  
   {% if user.is_superuser %}
     <a href="{% url 'dashboard' %}" class="btn btn-primary mb-3">Dashboard Superusuário</a>
   {% elif user.is_staff %}
     <a href="{% url 'staff_dashboard' circuito.id %}" class="btn btn-info mb-3">Dashboard do Circuito</a>
   {% endif %}
-  <ul class="ranking-list">
-    {% for equipe in equipes %}
-     <a href="{% url 'equipe_detail' equipe.id %}">
-      <li>
-        {% if forloop.counter == 1 %}
-          <span class="medalha ouro">&#x1F947;</span>
-        {% elif forloop.counter == 2 %}
-          <span class="medalha prata">&#x1F948;</span>
-        {% elif forloop.counter == 3 %}
-          <span class="medalha bronze">&#x1F949;</span>
-        {% else %}
-          <span style="width:24px; display:inline-block;"></span>
-        {% endif %}
-        <span class="equipe-nome">{{ equipe.nome }}</span>
-        <span class="pontos">{{ equipe.pontuacao_total }} pontos</span>
-      </li>
-     </a>
-    {% endfor %}
-  </ul>
+
+  {% if equipes %}
+    <ul class="ranking-list">
+      {% for equipe in equipes %}
+        <a href="{% url 'equipe_detail' equipe.id %}">
+          <li>
+            {% if forloop.counter == 1 %}
+              <span class="medalha ouro">&#x1F947;</span>
+            {% elif forloop.counter == 2 %}
+              <span class="medalha prata">&#x1F948;</span>
+            {% elif forloop.counter == 3 %}
+              <span class="medalha bronze">&#x1F949;</span>
+            {% else %}
+              <span class="medalha empty" style="width:36px;"></span>
+            {% endif %}
+            
+            <span class="equipe-nome d-flex align-items-center gap-2">
+              {% if equipe.brasao %}
+                <img src="{{ equipe.brasao.url }}" alt="Brasão de {{ equipe.nome }}" style="height: 28px; width: 28px; border-radius: 50%; object-fit: cover; margin-right: 0.5rem;">
+              {% endif %}
+              {{ equipe.nome }}
+            </span>
+
+            <span class="pontos">
+              {% if circuito.modo_ranking == 'tempo' %}
+                {{ equipe.tempo_formatado }} {# Alterado para tempo_formatado #}
+              {% else %}
+                {{ equipe.pontuacao_total }}
+              {% endif %}
+            </span>
+
+          </li>
+        </a>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-center text-muted">Nenhuma equipe cadastrada neste circuito ainda.</p>
+  {% endif %}
 </div>
 {% endblock %}

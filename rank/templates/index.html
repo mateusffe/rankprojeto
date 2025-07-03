@@ -3,9 +3,9 @@
 {% block title %}Circuitos Ativos{% endblock %}
 
 {% block content %}
-<h2 style="text-align: center;">Circuitos Ativos</h2>
+<h2 style="text-align: center;">Provas Ativas</h2>
 {% if user.is_superuser %}
-    <a href="{% url 'dashboard'%}" class="btn btn-primary mb-3">Dashboard Superusuário</a>
+    <a href="{% url 'dashboard'%}" class="btn btn-primary mb-3">Dashboard Admin</a>
 {% endif %}
 
 {% if circuitos_ativos %}
@@ -13,7 +13,7 @@
     {% for circuito in circuitos_ativos %}
       <a href="{% url 'ranking' circuito.id %}" style="
           padding: 1rem 2rem;
-          background-color: #007bff;
+          background-color: #3a0ca3;
           color: white;
           text-decoration: none;
           border-radius: 8px;
@@ -28,7 +28,7 @@
     {% endfor %}
   </div>
 {% else %}
-  <p style="text-align: center;">Nenhum circuito ativo no momento.</p>
+  <p style="text-align: center;">Nenhuma prova ativa no momento.</p>
 {% endif %}
 
 {% endblock %}

@@ -1,6 +1,190 @@
 {% extends 'base.html' %}
 {% load form_extras %}
 
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const equipeSelect = document.getElementById('id_equipe');
+        const circuitoFiltroSelect = document.getElementById('id_circuito_filtro');
+
+        // Função para carregar equipes via AJAX
+        function loadEquipes(selectedCircuitoId, equipeSelect, currentSelectedEquipeId) {
+            fetch(`/api/equipes_by_circuito/${selectedCircuitoId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    // Limpa o select e mantém apenas a opção padrão (---------)
+                    while (equipeSelect.options.length > 1) {
+                        equipeSelect.remove(1);
+                    }
+
+                    // Adiciona as novas opções
+                    data.forEach(equipe => {
+                        const option = document.createElement('option');
+                        option.value = equipe.id;
+                        option.textContent = equipe.nome;
+                        equipeSelect.appendChild(option);
+                    });
+
+                    // Restaura a seleção anterior, se houver
+                    if (currentSelectedEquipeId && [...equipeSelect.options].some(o => o.value === currentSelectedEquipeId)) {
+                        equipeSelect.value = currentSelectedEquipeId;
+                    }
+                })
+                .catch(error => console.error('Erro ao carregar equipes:', error));
+        }
+
+        // Adiciona o evento change ao select de filtro (para MembroForm)
+        if (circuitoFiltroSelect) {
+            circuitoFiltroSelect.addEventListener('change', function() {
+                loadEquipes(this.value, equipeSelect, equipeSelect.value);
+            });
+
+            // Chama o filtro na carga inicial se um circuito já estiver selecionado
+            if (circuitoFiltroSelect.value) {
+                loadEquipes(circuitoFiltroSelect.value, equipeSelect, equipeSelect.value);
+            }
+        }
+
+        // JavaScript para PontuacaoForm (filtrar equipes e mostrar/esconder campos de valor/tempo)
+        const circuitoSelectPontuacao = document.getElementById('id_circuito');
+        if (circuitoSelectPontuacao) {
+            circuitoSelectPontuacao.addEventListener('change', function() {
+                const selectedCircuitoId = this.value;
+                loadEquipes(selectedCircuitoId, equipeSelect, equipeSelect.value);
+                
+                // Mostra/esconde campos de valor/tempo
+                const valorDiv = document.querySelector('.field-valor');
+                const horasDiv = document.querySelector('.field-horas');
+                const minutosDiv = document.querySelector('.field-minutos');
+                const segundosDiv = document.querySelector('.field-segundos');
+
+                if (selectedCircuitoId) {
+                    fetch(`/api/circuito_details/${selectedCircuitoId}/`)
+                        .then(response => response.json())
+                        .then(circuitoData => {
+                            if (circuitoData.modo_ranking === 'tempo') {
+                                if (valorDiv) valorDiv.style.display = 'none';
+                                if (horasDiv) horasDiv.style.display = 'block';
+                                if (minutosDiv) minutosDiv.style.display = 'block';
+                                if (segundosDiv) segundosDiv.style.display = 'block';
+                            } else {
+                                if (valorDiv) valorDiv.style.display = 'block';
+                                if (horasDiv) horasDiv.style.display = 'none';
+                                if (minutosDiv) minutosDiv.style.display = 'none';
+                                if (segundosDiv) segundosDiv.style.display = 'none';
+                            }
+                        })
+                        .catch(error => console.error('Erro ao carregar detalhes do circuito:', error));
+                } else {
+                    // Se nenhum circuito for selecionado, esconde todos os campos de valor/tempo
+                    if (valorDiv) valorDiv.style.display = 'none';
+                    if (horasDiv) horasDiv.style.display = 'none';
+                    if (minutosDiv) minutosDiv.style.display = 'none';
+                    if (segundosDiv) segundosDiv.style.display = 'none';
+                }
+            });
+
+            // Chama a função na carga inicial para definir o estado correto
+            if (circuitoSelectPontuacao.value) {
+                loadEquipes(circuitoSelectPontuacao.value, equipeSelect, equipeSelect.value);
+                circuitoSelectPontuacao.dispatchEvent(new Event('change'));
+            } else {
+                // Esconde os campos de valor/tempo se nenhum circuito estiver selecionado inicialmente
+                const valorDiv = document.querySelector('.field-valor');
+                const horasDiv = document.querySelector('.field-horas');
+                const minutosDiv = document.querySelector('.field-minutos');
+                const segundosDiv = document.querySelector('.field-segundos');
+                if (valorDiv) valorDiv.style.display = 'none';
+                if (horasDiv) horasDiv.style.display = 'none';
+                if (minutosDiv) minutosDiv.style.display = 'none';
+                if (segundosDiv) segundosDiv.style.display = 'none';
+            }
+        }
+    });
+
+    // JavaScript para PenalizacaoForm
+    document.addEventListener('DOMContentLoaded', function() {
+        const circuitoSelectPenalizacao = document.getElementById('id_circuito');
+        const equipeSelectPenalizacao = document.getElementById('id_equipe');
+
+        function loadEquipesPenalizacao(selectedCircuitoId, equipeSelect, currentSelectedEquipeId) {
+            fetch(`/api/equipes_by_circuito/${selectedCircuitoId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    while (equipeSelect.options.length > 1) {
+                        equipeSelect.remove(1);
+                    }
+                    data.forEach(equipe => {
+                        const option = document.createElement('option');
+                        option.value = equipe.id;
+                        option.textContent = equipe.nome;
+                        equipeSelect.appendChild(option);
+                    });
+                    if (currentSelectedEquipeId && [...equipeSelect.options].some(o => o.value === currentSelectedEquipeId)) {
+                        equipeSelect.value = currentSelectedEquipeId;
+                    }
+                })
+                .catch(error => console.error('Erro ao carregar equipes para penalização:', error));
+        }
+
+        function togglePenalizacaoFields(selectedCircuitoId) {
+            const valorDiv = document.querySelector('.field-valor');
+            const horasDiv = document.querySelector('.field-horas');
+            const minutosDiv = document.querySelector('.field-minutos');
+            const segundosDiv = document.querySelector('.field-segundos');
+
+            if (selectedCircuitoId) {
+                fetch(`/api/circuito_details/${selectedCircuitoId}/`)
+                    .then(response => response.json())
+                    .then(circuitoData => {
+                        if (circuitoData.modo_ranking === 'tempo') {
+                            if (valorDiv) valorDiv.style.display = 'none';
+                            if (horasDiv) horasDiv.style.display = 'block';
+                            if (minutosDiv) minutosDiv.style.display = 'block';
+                            if (segundosDiv) segundosDiv.style.display = 'block';
+                        } else {
+                            if (valorDiv) valorDiv.style.display = 'block';
+                            if (horasDiv) horasDiv.style.display = 'none';
+                            if (minutosDiv) minutosDiv.style.display = 'none';
+                            if (segundosDiv) segundosDiv.style.display = 'none';
+                        }
+                    })
+                    .catch(error => console.error('Erro ao carregar detalhes do circuito para penalização:', error));
+            } else {
+                if (valorDiv) valorDiv.style.display = 'none';
+                if (horasDiv) horasDiv.style.display = 'none';
+                if (minutosDiv) minutosDiv.style.display = 'none';
+                if (segundosDiv) segundosDiv.style.display = 'none';
+            }
+        }
+
+        if (circuitoSelectPenalizacao) {
+            circuitoSelectPenalizacao.addEventListener('change', function() {
+                const selectedCircuitoId = this.value;
+                loadEquipesPenalizacao(selectedCircuitoId, equipeSelectPenalizacao, equipeSelectPenalizacao.value);
+                togglePenalizacaoFields(selectedCircuitoId);
+            });
+
+            // Chama a função na carga inicial para definir o estado correto
+            if (circuitoSelectPenalizacao.value) {
+                loadEquipesPenalizacao(circuitoSelectPenalizacao.value, equipeSelectPenalizacao, equipeSelectPenalizacao.value);
+                togglePenalizacaoFields(circuitoSelectPenalizacao.value);
+            } else {
+                // Esconde os campos de valor/tempo se nenhum circuito estiver selecionado inicialmente
+                const valorDiv = document.querySelector('.field-valor');
+                const horasDiv = document.querySelector('.field-horas');
+                const minutosDiv = document.querySelector('.field-minutos');
+                const segundosDiv = document.querySelector('.field-segundos');
+                if (valorDiv) valorDiv.style.display = 'none';
+                if (horasDiv) horasDiv.style.display = 'none';
+                if (minutosDiv) minutosDiv.style.display = 'none';
+                if (segundosDiv) segundosDiv.style.display = 'none';
+            }
+        }
+    });
+</script>
+{% endblock %}
+
 {% block title %}{{ titulo }}{% endblock %}
 
 {% block content %}
@@ -13,14 +197,15 @@
         <div class="alert alert-{{ message.tags }}">{{ message }}</div>
         {% endfor %}
     </div>
-  {% endif %}
 
-  <form method="post" novalidate>
+    
+  {% endif %}
+<form method="post" novalidate enctype="multipart/form-data">
     {% csrf_token %}
 
     {# Campos do formulário principal #}
     {% for field in form %}
-      <div class="mb-3">
+      <div class="mb-3 field-{{ field.name }}"> {# Adicionado class para JS #}
         {% if field.field.widget.input_type == 'checkbox' %}
             <div class="form-check mb-3">
                 {{ field|add_class:"form-check-input" }}

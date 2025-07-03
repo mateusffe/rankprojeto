@@ -36,7 +36,8 @@
                         <td>{% if circuito.ativo %}Sim{% else %}Não{% endif %}</td>
                         <td>
                             <a href="{% url 'editar_modelo' modelo='circuito' pk=circuito.pk %}" class="btn btn-sm btn-warning">Editar</a>
-                            <a href="{% url 'excluir_modelo' modelo='circuito' pk=circuito.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este circuito?');">Excluir</a>
+                            <a href="{% url 'exc_pr' pk=circuito.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir este circuito?');">Excluir</a>
+                            <a href="{% url 'inativar' pk=circuito.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja Inativar este circuito?');">Inativar</a>
                         </td>
                     </tr>
                 {% endfor %}

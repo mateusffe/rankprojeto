@@ -1,24 +1,228 @@
+{# /templates/equipe_detail.html #}
+
 {% extends 'base.html' %}
-{% block title %}{{ equipe.nome }}{% endblock %}
+{% block title %}Detalhes da Equipe: {{ equipe.nome }}{% endblock %}
+
 {% block content %}
-<h2>{{ equipe.nome }}</h2>
-<p><strong>Total:</strong> {{ equipe.pontuacao_total }} pontos</p>
+<style>
+  /* Estilo apenas para elementos dentro do #equipe-detail-page */
+  #equipe-detail-page {
+    background: #f8f9fa;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 16px;
+  }
 
-<h3>Pontuações</h3>
-<ul>
-  {% for p in equipe.pontuacoes.all %}
-    <li>{{ p.atividade.nome }}: +{{ p.valor }} ({{ p.data|date:"d/m/Y H:i" }})</li>
-  {% empty %}
-    <li>Sem pontuações.</li>
-  {% endfor %}
-</ul>
+  #equipe-detail-page .info-block {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
 
-<h3>Penalizações</h3>
-<ul>
-  {% for p in equipe.penalizacoes.all %}
-    <li>{{ p.motivo }}: {{ p.valor }} ({{ p.data|date:"d/m/Y H:i" }})</li>
-  {% empty %}
-    <li>Sem penalizações.</li>
-  {% endfor %}
-</ul>
+  #equipe-detail-page .team-summary {
+    text-align: center;
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  }
+
+  #equipe-detail-page #brasaoid {
+    max-width: 100px;
+    border-radius: 50%;
+    margin-bottom: 15px;
+    border: 2px solid #3a0ca3;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    background: white;
+  }
+
+  #equipe-detail-page h2 {
+    color: #3a0ca3;
+    margin-bottom: 15px;
+    font-size: 24px;
+    position: relative;
+  }
+
+  #equipe-detail-page h2::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, #7209b7, #f72585);
+  }
+
+  #equipe-detail-page h3 {
+    color: #3a0ca3;
+    margin-bottom: 15px;
+    font-size: 20px;
+    position: relative;
+  }
+
+  #equipe-detail-page h3::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #7209b7, #f72585);
+  }
+
+  #equipe-detail-page ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  #equipe-detail-page ul li {
+    padding: 12px 15px;
+    background: white;
+    border-radius: 8px;
+    margin: 8px 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  #equipe-detail-page ul li:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  #equipe-detail-page .table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  #equipe-detail-page .table th {
+    background: #3a0ca3;
+    color: white;
+    padding: 12px;
+    text-align: left;
+  }
+
+  #equipe-detail-page .table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  #equipe-detail-page .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f8f9fa;
+  }
+
+  #equipe-detail-page .table-hover tbody tr:hover {
+    background-color: #e9ecef;
+  }
+
+  #equipe-detail-page .table-primary {
+    background-color: rgba(67, 97, 238, 0.1) !important;
+    font-weight: bold;
+  }
+
+  #equipe-detail-page strong {
+    color: #4361ee;
+  }
+</style>
+
+
+
+<div id="equipe-detail-page">
+
+  <div class="info-block team-summary">
+    {% if equipe.brasao %}
+        <img src="{{ equipe.brasao.url }}" alt="Brasão de {{ equipe.nome }}" id="brasaoid">
+    {% endif %}
+    <h2>{{ equipe.nome }}</h2>
+    <p><strong>Circuito:</strong> {{ circuito.nome }}</p>
+    <p><strong>Posição no Ranking:</strong> {{ posicao }}{% if posicao %}º{% endif %}</p>
+  </div>
+
+  <div class="info-block">
+    <h3>Membros ({{ membros.count }})</h3>
+    <ul>
+      {% for membro in membros %}
+        <li>{{ membro.nome }}</li>
+      {% empty %}
+        <li>Sem membros cadastrados.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="info-block">
+    <h3>Pontuações Recentes</h3>
+    <ul>
+      {% for p in pontuacoes|slice:":10" %}
+        <li>
+          {% if p.circuito %}
+            <strong>{{ p.circuito.nome }}</strong> -
+          {% endif %}
+          {% if p.circuito.modo_ranking == 'tempo' %}
+            {{ p.tempo_formatado }} - {# Alterado para tempo_formatado #}
+          {% else %}
+            {{ p.valor }} pontos -
+          {% endif %}
+          {{ p.data|date:"d/m/Y" }} -   {% if p.usuario %}<em> por {{ p.usuario.get_full_name|default:p.usuario.username }}</em>{% endif %}
+        </li>
+      {% empty %}
+        <li>Sem pontuações registradas.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="info-block">
+    <h3>Penalizações Recentes</h3>
+    <ul>
+      {% for pen in penalizacoes|slice:":10" %}
+        <li>
+          {% if pen.circuito.modo_ranking == 'tempo' %}
+            -{{ pen.tempo_formatado }} ({{ pen.motivo }}) - {{ pen.data|date:"d/m/Y" }} - {% if pen.usuario %}<em> por {{ pen.usuario.username }}</em>{% endif %}
+          {% else %}
+            {{ pen.motivo }} - {{ pen.valor }} pontos ({{ pen.data|date:"d/m/Y" }}) - {% if pen.usuario %}<em> por {{ pen.usuario.username }}</em>{% endif %}
+          {% endif %}
+        </li>
+      {% empty %}
+        <li>Sem penalizações registradas.</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="info-block">
+    <h3>Ranking Completo do Circuito</h3>
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>Posição</th>
+          <th>Equipe</th>
+          <th>
+            {% if circuito.modo_ranking == 'tempo' %}
+              Tempo
+            {% else %}
+              Pontos
+            {% endif %}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for eq in ranking %}
+          <tr {% if eq.id == equipe.id %}class="table-primary"{% endif %}>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ eq.nome }}</td>
+            <td>
+              {% if circuito.modo_ranking == 'tempo' %}
+                {{ eq.tempo_formatado }} {# Alterado para tempo_formatado #}
+              {% else %}
+                {{ eq.pontuacao_total }}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
 {% endblock %}
